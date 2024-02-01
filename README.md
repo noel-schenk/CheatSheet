@@ -23,15 +23,14 @@ return new Proxy(this, {
 
 ```
 
+
 import { StoreApi, UseBoundStore, create } from 'zustand';
 
 const GlobalState = {
-    'Initiator--clicked': false,
-    'Initiator-source-text': '',
-    'Initiator-target-text': '',
-    'Initiator-results': Array<string>(),
-    'Initiator--loading-data': false
+    'XXX-test': 'TT' as TESTS,
 };
+
+type TESTS = 'TT' | 'EE';
 
 type State = typeof GlobalState;
 
@@ -51,7 +50,8 @@ const basicGlobalState = create<Store>(
         set: createSetter(set),
         get: (key) => get()[key],
         subscribe: (key, callback) => {
-            const listener = (state: State) => {
+            const listener = (state: State, prevState: State) => {
+                if (state[key] === prevState[key]) return;
                 callback(state[key]);
             };
             return api.subscribe(listener);
