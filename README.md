@@ -23,14 +23,17 @@ return new Proxy(this, {
 
 ```
 
-
 import { StoreApi, UseBoundStore, create } from 'zustand'
+import { flatten } from 'flatten-anything'
+import { FlattenType } from './globalStateHelper'
 
-const GlobalState = {
-    'test': '' as string,
+const _GlobalState = {
+    test: {
+        test: '',
+    },
 }
-
-type State = typeof GlobalState
+type State = FlattenType<typeof _GlobalState>
+const GlobalState = flatten(_GlobalState) as State
 
 const createSetter = (set: any) => (key: keyof State, value: any) => {
     set((state: any) => ({ ...state, [key]: value }))
@@ -57,7 +60,7 @@ const basicGlobalState = create<Store>((set, get, api) => ({
 
 type ExtendedStore = Omit<UseBoundStore<StoreApi<Store>>, 'subscribe'> & {
     (): Store
-    set: (key: keyof State, value: any) => void
+    set: <K extends keyof State>(key: K, value: State[K]) => void
     get: <T extends keyof State>(key: T) => State[T]
     subscribe: <K extends keyof State>(
         key: K,
@@ -71,7 +74,7 @@ type ExtendedStore = Omit<UseBoundStore<StoreApi<Store>>, 'subscribe'> & {
 const useGlobalState = basicGlobalState as any as ExtendedStore
 useGlobalState.oldSubscribe = basicGlobalState.subscribe
 
-useGlobalState.set = (key: keyof State, value: any) =>
+useGlobalState.set = <K extends keyof State>(key: K, value: State[K]) =>
     useGlobalState.setState({ [key]: value })
 useGlobalState.get = <T extends keyof State>(key: T) =>
     useGlobalState.getState()[key]
@@ -86,6 +89,34 @@ useGlobalState.subscribe = <K extends keyof State>(
 }
 
 export default useGlobalState
+
+
+
+```
+
+
+```
+
+
+type Primitive = string | number | boolean | symbol | undefined | null
+
+// Helper type to accumulate flattened paths
+type Flatten<T, Path extends string = ''> = {
+    [K in keyof T]: T[K] extends Primitive
+        ? { [P in `${Path}${K & string}`]: T[K] }
+        : Flatten<T[K], `${Path}${K & string}.`>
+}[keyof T]
+
+// Utility type to merge all properties into a single type
+type Merge<T> = (T extends any ? (x: T) => void : never) extends (
+    x: infer R
+) => void
+    ? R
+    : never
+
+// Final Flatten type that applies Merge to consolidate all properties
+export type FlattenType<T> = Merge<Flatten<T>>
+
 
 
 ```
