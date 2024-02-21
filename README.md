@@ -100,10 +100,14 @@ export default useGlobalState
 
 type Primitive = string | number | boolean | symbol | undefined | null
 
-// Helper type to accumulate flattened paths
+type IsArray<T> = T extends Array<any> ? T : never
+
+// Updated helper type to accumulate flattened paths, with special handling for arrays
 type Flatten<T, Path extends string = ''> = {
     [K in keyof T]: T[K] extends Primitive
         ? { [P in `${Path}${K & string}`]: T[K] }
+        : T[K] extends Array<any>
+        ? { [P in `${Path}${K & string}`]: IsArray<T[K]> } // Preserve array type as is
         : Flatten<T[K], `${Path}${K & string}.`>
 }[keyof T]
 
@@ -116,6 +120,7 @@ type Merge<T> = (T extends any ? (x: T) => void : never) extends (
 
 // Final Flatten type that applies Merge to consolidate all properties
 export type FlattenType<T> = Merge<Flatten<T>>
+
 
 
 
