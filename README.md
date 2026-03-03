@@ -125,3 +125,15 @@ export type FlattenType<T> = Merge<Flatten<T>>
 
 
 ```
+
+## assertTrue
+
+```
+export function assertTrue(
+  condition: boolean,
+  message: string,
+): asserts condition {
+  if (!condition) throw `Assertion failed: ${message}`
+}
+```
+
