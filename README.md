@@ -1,6 +1,7 @@
 # CheatSheet
 
 ## Return new object of modified property using (setProperty) and defining property like (property)
+### Creates a JavaScript Proxy that dynamically intercepts property access to provide immutable-style setter methods, similar to a builder pattern
 
 ```
 return new Proxy(this, {
